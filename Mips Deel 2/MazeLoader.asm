@@ -2,6 +2,7 @@
 	filename: .asciiz "C:/Users/DH Services BVBA/Desktop/MIPS PROJECT MAZE/Mips Deel 2/input_1.txt"
 	buffer: .space 2
 	charCount: .word 0
+	wonMsg: .asciiz "\nYou won"
 
 #kleuren
 	wallColor:      .word 0x004286F4    # Color used for walls (blue)
@@ -134,6 +135,7 @@ setExitColor:
 	
 	add $t5, $gp, $t3	#offset optellen bij de gp om het juiste adres te krijgen ven het karakter
 	
+	move $s1, $t5	#opslaan van exit adres
 	sw $t4, 0($t5)
 	
 	jr $ra 
@@ -156,26 +158,24 @@ main2: #main for reading the input
 
 
 readInput: #updates the player position for each input
+#player position is in $t9
 	
 #aanmaken stackframe
-	addi $sp, $sp, -16
+	addi $sp, $sp, -12
 	
-	sw $ra, 12($sp)
-	sw $t9, 8($sp)
-	sw $t6, 4($sp)
-	sw $t0, 0($sp)
+	sw $ra, 8($sp)
+	sw $t6, 4($sp)		#is normaal leeg 
+	sw $t0, 0($sp)		#opslaan van vorige t0
 	
-	#huidige posisitie zit in $t9
-	#we vragen eerst de input
-	
-	#syscall voor read charachter
-	li $v0, 12
+
+#we vragen eerst de input	
+	li $v0, 12		#syscall voor read charachter
 	syscall
 	
 	move $t6, $v0	#opslagen het charachter op in $t6
 	
 	li $t0, 'z'	#laden van charachter z in $t0
-	beq $t6, $t0, calcz
+	beq $t6, $t0, calcz #als de karakters overeen komen, bereken het nieuwe adres
 	
 	li $t0, 's'	#laden van charachter s in $t0
 	beq $t6, $t0, calcs
@@ -190,7 +190,6 @@ readInput: #updates the player position for each input
 	beq $t6, $t0, exit
 	
 	
-
 	jal slapen 	#indien er geen/andere input is
 	
 	j exitstack
@@ -205,55 +204,128 @@ slapen:
 	
 	jr $ra
 	
+	
+	
 exitstack:
 
 #fixen van stackframe want dit is nog niet gebeurt 
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
-	lw $t9, 8($sp)
-	lw $ra, 12($sp)
+	lw $ra, 8($sp)
 	
-	addi $sp, $sp, 16
+	addi $sp, $sp, 12
 	
 	
 	
 	j readInput
 	
+
+mazeExit:
+	
 	
 
 calcz:
+#calculating the right position to move to 
+	
+	sub $t3, $t3, $t3 #reset t0
+	
+	addi $t3, $t3 -128 #we zetten -4 in t3 voor nieuwe adres te berekenen
+	
+	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
+	
+	jal movePlayer
 	
 	
+	
+	jal slapen 	#indien er wel input is
+
 
 #fixen van stackframe	
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
-	lw $t9, 8($sp)
-	lw $ra, 12($sp)
+	lw $ra, 8($sp)
 	
-	addi $sp, $sp, 16
+	addi $sp, $sp, 12
+	
+	
 	
 	j readInput
 	
 	
 calcs:
 
+	sub $t3, $t3, $t3 #reset t0
+	
+	addi $t3, $t3 128 #we zetten -4 in t3 voor nieuwe adres te berekenen
+	
+	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
+	
+	jal movePlayer
+	
+	
+	
+	jal slapen 	#indien er wel input is
 
 
 
 #fixen van stackframe	
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
-	lw $t9, 8($sp)
-	lw $ra, 12($sp)
+	lw $ra, 8($sp)
 	
-	addi $sp, $sp, 16
+	addi $sp, $sp, 12
 	
+	
+	beq $s1, $t9, exitWin
+	jal slapen 	#indien er wel input is
+
+	j readInput
+	
+	
+calcq: #move left
+	#adres zit nog in $t9
+	#offset is $t3
+	
+	sub $t3, $t3, $t3 #reset t0
+	
+	addi $t3, $t3 -4 #we zetten -4 in t3 voor nieuwe adres te berekenen
+	
+	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
+	beq $s1, $t9, exitWin
+	
+	jal movePlayer
+	
+	
+	jal slapen 	#indien er wel input is
+	
+
+
+
+#fixen van stackframe	
+	lw $t0, 0($sp)
+	lw $t6, 4($sp)
+	lw $ra, 8($sp)
+	
+	addi $sp, $sp, 12
+	
+	beq $s1, $t9, exitWin
+
 	
 	j readInput
 	
 	
-calcq:
+calcd: #move right
+	sub $t3, $t3, $t3 #reset t0
+	
+	addi $t3, $t3 4 #we zetten -4 in t3 voor nieuwe adres te berekenen
+	
+	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
+	
+	jal movePlayer
+	
+	beq $s1, $t9, exitWin
+	
+	jal slapen 	#indien er wel input is
 
 
 
@@ -261,27 +333,11 @@ calcq:
 #fixen van stackframe	
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
-	lw $t9, 8($sp)
-	lw $ra, 12($sp)
+	lw $ra, 8($sp)
 	
-	addi $sp, $sp, 16
+	addi $sp, $sp, 12
 	
-	j readInput
-	
-	
-calcd:
-
-
-
-
-#fixen van stackframe	
-	lw $t0, 0($sp)
-	lw $t6, 4($sp)
-	lw $t9, 8($sp)
-	lw $ra, 12($sp)
-	
-	addi $sp, $sp, 16
-	
+	beq $s1, $t9, exitWin
 	j readInput
 	
 	
@@ -294,18 +350,70 @@ calcx:
 #fixen van stackframe	
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
-	lw $t9, 8($sp)
-	lw $ra, 12($sp)
+	lw $ra, 8($sp)
 	
-	addi $sp, $sp, 16
+	addi $sp, $sp, 12
+	
+	
+	jal slapen 	#indien er wel input is
+	
 	
 	j exit
 	
 	
+away:
+	jr $ra
+	
+movePlayer: #krijgt een adres zet dat adres naar geel en zet het vorige adres naar zwart
+	
+	#moet nog nagaan of het nieuwe adres geen blauw vakje is (voor later)
+	la $t7, wallColor
+	lw $t7, 0($t7)
+	
+	la $t6, 0($t8)
+	lw $t6, 0($t6)
+	
+	beq $t6, $t7, away 	#als het een blauwe blok is, doe niks
+	
+	
+	
+	
+	#t9 is het oude adres
+	#t8 is het nieuwe adres
+	
+	
+	
+	
+	la $t4, playerColor
+	lw $t4, 0($t4)	
+	sw $t4, 0($t8)
+	
+	la $t4, passageColor
+	lw $t4, 0($t4)
+	sw $t4, 0($t9)
+	
+	
+			
 
 	
 	
+	
+	move $t9, $t8 #update current player position
+	jr $ra
+	
+	
+
+	
+
+	j exit
 exitTekst:
+
+exitWin:
+	li $v0,4
+	la $a0, wonMsg
+	syscall
+	
+	j exit
 
 	
 
