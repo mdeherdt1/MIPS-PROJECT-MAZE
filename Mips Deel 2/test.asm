@@ -1,5 +1,5 @@
 .data
-	filename: .asciiz "C:/Users/DH Services BVBA/Desktop/MIPS PROJECT MAZE/Mips Deel 2/input_1.txt"
+	filename: .asciiz "input_1.txt"
 	buffer: .space 2
 	charCount: .word 0
 
