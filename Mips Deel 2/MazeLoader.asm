@@ -26,40 +26,43 @@ main:
 	
 
 read_loop:
-	
-	
-	#bestand is 512 karakters groot
-	lw $t2, charCount
-	li $t3, 512
-	beq $t2, $t3, close 	#als het alle karakters heeft overlopen exit
-	
-	
-#inlezen van 1 karakter
-	li $v0, 14	#syscall voor inlezen van file
-	move $a0, $s0 	#filedescriptor naar $a0
-	
-	la $a1, buffer	#buffer waar het karakter zal in worden opgeslagen
-	li $a2, 1	#aantal karakters dat zal worden ingelezen
-	syscall
-	
-	lb $t1, buffer	#gelezen byte inladen in $t1
-	beqz $t1, close	#als het einde van het bestand bereikt exit
-	
-	#er mogen geen endl charachters bij zitten dus die filteren we weg
-	li $t0, 10 	#ascii voor een endl
-	beq $t1, $t0, read_loop #lees het volgende karakter zonder de count te verhogen
-	
-	
-	jal Color
-	
-	
-	
-#verhogen van de charCount
-    lw $t2, charCount	
+    # Lees 1 karakter
+    li $v0, 14          # Syscall voor het lezen van een bestand
+    move $a0, $s0       # Filedescriptor naar $a0
+    la $a1, buffer      # Buffer voor gelezen karakter
+    li $a2, 1           # Lees 1 karakter
+    syscall
+
+    # Controleer op EOF
+    beqz $v0, close     # Als er geen karakters gelezen zijn, is het EOF
+
+    # Laad het gelezen karakter
+    lb $t1, buffer
+
+    # Controleer op toegestane karakters: z, q, s, d, x
+    li $t0, 'w'
+    beq $t1, $t0, process_character
+    li $t0, 'p'
+    beq $t1, $t0, process_character
+    li $t0, 'u'
+    beq $t1, $t0, process_character
+    li $t0, 's'
+    beq $t1, $t0, process_character
+
+    # Als het karakter niet een van de toegestane karakters is, ga verder
+    j read_loop
+
+process_character:
+    # Verwerk het toegestane karakter
+    jal Color
+
+    # Verhoog de charCount
+    lw $t2, charCount   
     addi $t2, $t2, 1
     sw $t2, charCount
 
-    j read_loop  
+    j read_loop
+
     
     
 Color: 
@@ -150,8 +153,6 @@ setExitColor:
 
 main2: #main for reading the input
 	jal readInput
-	
-	
 	j exit
 
 
@@ -218,10 +219,7 @@ exitstack:
 	
 	
 	j readInput
-	
 
-mazeExit:
-	
 	
 
 calcz:
@@ -276,7 +274,6 @@ calcs:
 	addi $sp, $sp, 12
 	
 	
-	beq $s1, $t9, exitWin
 	jal slapen 	#indien er wel input is
 
 	j readInput
@@ -291,7 +288,6 @@ calcq: #move left
 	addi $t3, $t3 -4 #we zetten -4 in t3 voor nieuwe adres te berekenen
 	
 	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
-	beq $s1, $t9, exitWin
 	
 	jal movePlayer
 	
@@ -308,7 +304,6 @@ calcq: #move left
 	
 	addi $sp, $sp, 12
 	
-	beq $s1, $t9, exitWin
 
 	
 	j readInput
@@ -323,7 +318,7 @@ calcd: #move right
 	
 	jal movePlayer
 	
-	beq $s1, $t9, exitWin
+
 	
 	jal slapen 	#indien er wel input is
 
@@ -337,7 +332,6 @@ calcd: #move right
 	
 	addi $sp, $sp, 12
 	
-	beq $s1, $t9, exitWin
 	j readInput
 	
 	
@@ -375,13 +369,9 @@ movePlayer: #krijgt een adres zet dat adres naar geel en zet het vorige adres na
 	
 	beq $t6, $t7, away 	#als het een blauwe blok is, doe niks
 	
-	
-	
-	
+
 	#t9 is het oude adres
 	#t8 is het nieuwe adres
-	
-	
 	
 	
 	la $t4, playerColor
@@ -399,6 +389,9 @@ movePlayer: #krijgt een adres zet dat adres naar geel en zet het vorige adres na
 	
 	
 	move $t9, $t8 #update current player position
+	
+	beq $s1, $t9, exitWin
+	
 	jr $ra
 	
 	
@@ -406,8 +399,6 @@ movePlayer: #krijgt een adres zet dat adres naar geel en zet het vorige adres na
 	
 
 	j exit
-exitTekst:
-
 exitWin:
 	li $v0,4
 	la $a0, wonMsg
