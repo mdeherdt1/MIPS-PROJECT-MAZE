@@ -1,8 +1,8 @@
 .data
-	filename: .asciiz "C:/Users/DH Services BVBA/Desktop/MIPS PROJECT MAZE/Mips Deel 2/input_1.txt"
+	filename: .asciiz "input_1.txt"
 	buffer: .space 2
 	charCount: .word 0
-	wonMsg: .asciiz "\nYou won"
+	wonMsg: .asciiz "\nYou won the game!"
 
 #kleuren
 	wallColor:      .word 0x004286F4    # Color used for walls (blue)
@@ -11,7 +11,7 @@
 	exitColor:      .word 0x0000FF00    # Color used for exit (green)
 .text
 
-
+.globl main
 main:
 #openen van de file
 	li $v0, 13		#syscall voor openen van file
@@ -167,7 +167,8 @@ readInput: #updates the player position for each input
 	sw $ra, 8($sp)
 	sw $t6, 4($sp)		#is normaal leeg 
 	sw $t0, 0($sp)		#opslaan van vorige t0
-	
+	addi $fp, $sp, 8       # De nieuwe framepointer instellen
+
 
 #we vragen eerst de input	
 	li $v0, 12		#syscall voor read charachter
@@ -213,7 +214,8 @@ exitstack:
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
 	lw $ra, 8($sp)
-	
+	lw $fp, 0($sp)         # Oude framepointer terugzetten
+
 	addi $sp, $sp, 12
 	
 	
@@ -242,6 +244,8 @@ calcz:
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
 	lw $ra, 8($sp)
+	lw $fp, 0($sp)         # Oude framepointer terugzetten
+
 	
 	addi $sp, $sp, 12
 	
@@ -270,6 +274,8 @@ calcs:
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
 	lw $ra, 8($sp)
+	lw $fp, 0($sp)         # Oude framepointer terugzetten
+
 	
 	addi $sp, $sp, 12
 	
@@ -301,6 +307,8 @@ calcq: #move left
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
 	lw $ra, 8($sp)
+	lw $fp, 0($sp)         # Oude framepointer terugzetten
+
 	
 	addi $sp, $sp, 12
 	
@@ -329,6 +337,8 @@ calcd: #move right
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
 	lw $ra, 8($sp)
+	lw $fp, 0($sp)         # Oude framepointer terugzetten
+
 	
 	addi $sp, $sp, 12
 	
@@ -345,7 +355,8 @@ calcx:
 	lw $t0, 0($sp)
 	lw $t6, 4($sp)
 	lw $ra, 8($sp)
-	
+	lw $fp, 0($sp)         # Oude framepointer terugzetten
+
 	addi $sp, $sp, 12
 	
 	
