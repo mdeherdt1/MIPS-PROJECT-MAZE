@@ -1,4 +1,4 @@
-# color_screen_with_borders.asm
+
 .include "translate_coordinates.asm"
 
 .data

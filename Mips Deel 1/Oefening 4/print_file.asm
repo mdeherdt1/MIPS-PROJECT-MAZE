@@ -1,5 +1,5 @@
 .data
-filename: .asciiz "C:/Users/DH Services BVBA/Desktop/MIPS project 1/test_file_1.txt"
+filename: .asciiz "test_file_2.txt"
 buffer: .space 1024              # Buffer voor bestandsinhoud
 
 .text
