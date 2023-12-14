@@ -138,7 +138,7 @@ setExitColor:
 	
 	add $t5, $gp, $t3	#offset optellen bij de gp om het juiste adres te krijgen ven het karakter
 	
-	move $s1, $t5	#opslaan van exit adres
+	move $s1, $t5		#opslaan van exit adres
 	sw $t4, 0($t5)
 	
 	jr $ra 
@@ -267,7 +267,7 @@ calcs:
 	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
 	
 	sub $s3, $t9, 0x10008000 # Bereken het verschil tussen het huidige adres en het startadres
-    	srl $s3, $s3, 7         # Deel door 128 (32 vakjes * 4 bytes per vakje)
+    	srl $s3, $s3, 7         # Deel door 128
     	andi $s3, $s3, 0x0F     # Modulo 16 om de rijpositie te krijgen
 	
 	
