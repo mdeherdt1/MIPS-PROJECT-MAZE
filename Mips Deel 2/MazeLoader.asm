@@ -233,6 +233,10 @@ calcz:
 	
 	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
 	
+	li $t3, 0x10008000
+	blt $t8, $t3, readInput
+
+	
 	jal movePlayer
 	
 	
@@ -261,6 +265,15 @@ calcs:
 	addi $t3, $t3 128 #we zetten -4 in t3 voor nieuwe adres te berekenen
 	
 	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
+	
+	sub $s3, $t9, 0x10008000 # Bereken het verschil tussen het huidige adres en het startadres
+    	srl $s3, $s3, 7         # Deel door 128 (32 vakjes * 4 bytes per vakje)
+    	andi $s3, $s3, 0x0F     # Modulo 16 om de rijpositie te krijgen
+	
+	
+	li $s4, 15
+    	beq $s3, $s4, readInput # Als de speler in de onderste rij is, ga terug naar readInput
+
 	
 	jal movePlayer
 	
@@ -291,6 +304,13 @@ calcq: #move left
 	
 	sub $t3, $t3, $t3 #reset t0
 	
+	sub $s3, $t9, 0x10008000 # Bereken het verschil tussen het huidige adres en het startadres
+    	srl $s3, $s3, 2         # Deel door 4 (elk vakje is 4 bytes)
+    	andi $s3, $s3, 0x1F     # Modulo 32 om de kolompositie te krijgen
+
+   	 # Controleer of de speler al in de laatste kolom is
+   	 beqz $s3, readInput
+	
 	addi $t3, $t3 -4 #we zetten -4 in t3 voor nieuwe adres te berekenen
 	
 	add $t8, $t9, $t3	# t8 is het nieuwe ares waar de speler moet geplaatst worden
@@ -319,6 +339,16 @@ calcq: #move left
 	
 calcd: #move right
 	sub $t3, $t3, $t3 #reset t0
+	
+	# Bereken de huidige kolompositie van de speler
+    	sub $s3, $t9, 0x10008000 # Bereken het verschil tussen het huidige adres en het startadres
+    	srl $s3, $s3, 2         # Deel door 4 (elk vakje is 4 bytes)
+    	li $t2, 31              # Index van de laatste kolom (32 kolommen, 0-gebaseerd)
+    	andi $s3, $s3, 0x1F     # Modulo 32 om de kolompositie te krijgen
+
+   	 # Controleer of de speler al in de laatste kolom is
+   	 beq $s3, $t2, readInput 
+
 	
 	addi $t3, $t3 4 #we zetten -4 in t3 voor nieuwe adres te berekenen
 	

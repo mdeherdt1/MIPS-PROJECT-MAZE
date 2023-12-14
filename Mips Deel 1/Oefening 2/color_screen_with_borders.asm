@@ -5,7 +5,7 @@
 myColor:    .word 0x0bade3   # Voorbeeldwaarde voor blauw
 redColor: .word 0xff0000	#rood
 yellowColor: .word 0xffff00	#geel
-errortxt: .asciiz "Is alles correct voltooid?"
+errortxt: .asciiz "Success?"
 .text
 
 .globl main_file2
